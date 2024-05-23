@@ -4,8 +4,22 @@ const Event = require('../models/Event')
 
 router.get('/', async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 4
+
     const events = await Event.find()
-    res.json(events)
+      .limit(limit)
+      .skip((page - 1) * limit)
+
+    const total = await Event.countDocuments()
+    const totalPages = Math.ceil(total / limit)
+
+    res.json({
+      events,
+      totalPages,
+      currentPage: page,
+      totalEvents: total,
+    })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
